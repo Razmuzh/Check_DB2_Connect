@@ -1,0 +1,82 @@
+#!/usr/bin/python
+
+import ibm_db
+from timeit import default_timer as timer
+import getopt
+import sys
+
+def main(argv):
+
+   server = ''
+   port = ''
+   protocol = 'TCPIP'
+   database = ''
+   user = ''
+   password = ''
+
+
+   try:
+      opts, args = getopt.getopt(argv,"s:p:d:u:w:",["server=","port=","database=","user=","password="])
+   except getopt.GetoptError:
+      print 'Noop'
+      sys.exit(2)
+
+   for opt, arg in opts:
+      if opt == '-s':
+         server = arg
+
+   for opt, arg in opts:
+      if opt == '-p':
+         port = arg
+
+   for opt, arg in opts:
+      if opt == '-d':
+         database = arg
+
+   for opt, arg in opts:
+      if opt == '-u':
+         user = arg
+
+   for opt, arg in opts:
+      if opt == '-w':
+         password = arg
+
+
+### Try database Connect ###
+   try:
+      start = timer()
+      dsn = ("DATABASE={0};"
+             "HOSTNAME={1};"
+             "PORT={2};"
+             "PROTOCOL={3};"
+             "UID={4};"
+             "PWD={5};").format(database, server, port, protocol, user, password)
+
+      conn = ibm_db.connect(dsn, "", "")
+      ibm_db.close(conn)
+      end = timer()
+      conntime = (end - start)
+#      print conntime
+      melding = "OK"
+      if conntime < 1:
+         status = 0
+      if conntime > 1 :
+         status = 1
+
+   except:
+      status = 2
+      melding = "Fan!"
+      conntime = 0
+
+### Print Status Message ###
+   print melding
+
+### Print Performance data ###
+   if conntime <> 0:
+      perf = " | connTime=" + str(conntime)
+      print perf
+      sys.exit(status)
+
+
+if __name__ == "__main__":
+   main(sys.argv[1:])
